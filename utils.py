@@ -105,9 +105,9 @@ def show_movie_leaderboard(reply_token):
         title = '排行榜',
         text = '請按下方選項',
         actions = [
-            PostbackAction(label = '台北票房榜', data = '台北票房榜'),
-            PostbackAction(label = '全美票房榜', data = '全美票房榜'),
-            PostbackAction(label = '預告片榜', data = '預告片榜')
+            PostbackAction(label = '台北票房榜', text='請稍後片刻~', data = '台北票房榜'),
+            PostbackAction(label = '全美票房榜', text='請稍後片刻~', data = '全美票房榜'),
+            PostbackAction(label = '預告片榜', text='請稍後片刻~', data = '預告片榜')
         ])
     template_message = TemplateSendMessage(alt_text = 'Buttons alt text', template = buttons_template)
     send_template_message(reply_token, template_message)

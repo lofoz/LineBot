@@ -11,7 +11,9 @@ pygraphviz = "==1.5"
 transitions = "==0.6.9"
 line-bot-sdk = "==1.14.0"
 Flask = "==1.0.2"
-
+pyopenssl = "*"
+bs4 = "*"
+imgurpython = "*"
 
 [requires]
 python_version = "3.6"

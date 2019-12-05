@@ -117,8 +117,8 @@ def callback():
                 response = machine.advance_postback(event)
         print(f"\nFSM STATE: {machine.state}")
         print(f"REQUEST BODY: \n{body}")
-        if response == False:
-            send_text_message(event.reply_token, "Not Entering any State")
+        #if response == False:
+            #send_text_message(event.reply_token, "Not Entering any State")
 
     return "OK"
 	
