@@ -105,210 +105,121 @@ def show_movie_leaderboard(reply_token):
         title = '排行榜',
         text = '請按下方選項',
         actions = [
-            PostbackAction(label = '台北票房榜', text='請稍後片刻~', data = '台北票房榜'),
-            PostbackAction(label = '全美票房榜', text='請稍後片刻~', data = '全美票房榜'),
-            PostbackAction(label = '預告片榜', text='請稍後片刻~', data = '預告片榜')
+            PostbackAction(label = '台北票房榜', data = '台北票房榜'),
+            PostbackAction(label = '全美票房榜', data = '全美票房榜'),
+            PostbackAction(label = '年度票房榜', data = '年度票房榜')
         ])
     template_message = TemplateSendMessage(alt_text = 'Buttons alt text', template = buttons_template)
     send_template_message(reply_token, template_message)
     return True
 
-def show_hot_movies_tw(reply_token):
+def show_hot_movies(reply_token, chart):
     requests.packages.urllib3.disable_warnings()
-    target_url = 'https://movies.yahoo.com.tw/'
+    # 年度票房 or 全美票房 or 台北票房
+    if chart == '台北票房榜':
+        target_url = 'https://movies.yahoo.com.tw/chart.html'
+    elif chart == '全美票房榜':
+        target_url = 'https://movies.yahoo.com.tw/chart.html?cate=us'
+    elif chart == '年度票房榜':
+        target_url = 'https://movies.yahoo.com.tw/chart.html?cate=year'
     rs = requests.session()
     res = rs.get(target_url, verify=False)
     res.encoding = 'utf-8'
     soup = BeautifulSoup(res.text, 'html.parser')
     link = []
     movies_title = []
+    date = []
+    # 預告片
+    movies_pre = []
+    # 評價
+    movies_star = []
     img_link = []
     carousel_group = []
     # content = ""
     # 改 list 1,2,3
-    for index, datas in enumerate(soup.select('div#list1 ul a')):
-        if index == 10:
+    for index, datas in enumerate(soup.select('div.rank_list.table.rankstyle1 div.tr')):
+        if index == 0:
+            continue
+        # index-1 -> 找的數量
+        if index == 8:
             break
-        # 找圖片
-        movie_url = datas['href']
-        movie_rs = requests.session()
-        movie_res = movie_rs.get(movie_url, verify=False)
-        movie_res.encoding = 'utf-8'
-        movie_soup = BeautifulSoup(movie_res.text, 'html.parser')
-        movie_img_data = movie_soup.select_one('div .movie_intro_foto img')
-        img_link.append(movie_img_data['src'])
-        link.append(datas['href'])
-        movies_title.append(datas.li.span.text)
-    # 改 list 1,2,3
-    for index, datas in enumerate(soup.select('div#list1 ul .unclick')):
-        if index == 10:
-            break
-        link.insert(int(datas.find('div', {'class': 'num'}).text) - 1, "No URL")
-        img_link.insert(int(datas.find('div', {'class': 'num'}).text) - 1, "No URL")
-        movies_title.insert(int(datas.find('div', {'class': 'num'}).text) - 1, datas.span.text)
-    x = ['title', 'img_link', 'link']
+        movie_info = datas.find_all('div')
+        non = movie_info[3].find('a')
+        if non != None:
+            link.append(non['href'])
+            # 找圖片
+            movie_url = link[index - 1]
+            movie_rs = requests.session()
+            movie_res = movie_rs.get(movie_url, verify=False)
+            movie_res.encoding = 'utf-8'
+            movie_soup = BeautifulSoup(movie_res.text, 'html.parser')
+            movie_img_data = movie_soup.select_one('div .movie_intro_foto img')
+            img_link.append(movie_img_data['src'])
+        else:
+            link.append('')
+            img_link.append('')
+        if index == 1:
+            movies_title.append(movie_info[3].find('h2').text)
+            date.append(movie_info[4].text)
+            non = movie_info[5].find('a')
+            # 找預告片
+            if non != None:
+                movies_pre.append(non['href'])
+            else:
+                movies_pre.append('')
+            non = movie_info[6].find('h6')
+            # 找評價星星
+            if non != None:
+                movies_star.append(non.text)
+            else:
+                movies_star.append('')
+        else:
+            movies_title.append(movie_info[3].find('div', 'rank_txt').text)
+            date.append(movie_info[5].text)
+            non = movie_info[6].find('a')
+            # 找預告片
+            if non != None:
+                movies_pre.append(non['href'])
+            else:
+                movies_pre.append('')
+            non = movie_info[7].find('h6')
+            # 找評價星星
+            if non != None:
+                movies_star.append(non.text)
+            else:
+                movies_star.append('')
+    # 製作line 回復訊息
+    x = ['title', 'img_link', 'link', 'movies_pre', 'date']
     movies_group = []
     movies_group.append(movies_title)
     movies_group.append(img_link)
     movies_group.append(link)
+    movies_group.append(movies_pre)
+    movies_group.append(date)
     movies_dic = dict(zip(x, movies_group))
-    for i in range(10):
-        if (movies_dic['link'][i] != 'No URL'):
+    for i in range(7):
+        if (movies_dic['link'][i] != ''):
             carousel_data = CarouselColumn(
                 thumbnail_image_url=movies_dic['img_link'][i],
                 title=movies_dic['title'][i],
-                text = '123',
+                text=movies_dic['date'][i],
                 actions=[
-                    URIAction(label='Detail', uri=movies_dic['link'][i]),
-                    MessageAction(label='OK', text='米')
+                    URIAction(label='詳細內容', uri=movies_dic['link'][i]),
+                    URIAction(label='預告片', uri=movies_dic['movies_pre'][i]),
+                    MessageAction(label='加入最愛', text='米')
                 ]
             )
         else:
             carousel_data = CarouselColumn(
                 thumbnail_image_url='https://movies.tw.campaign.yahoo.net/i/o/production/movies/August2019/vpVOFf6g6g3WiSd1qFTN-2764x4096.jpeg',
                 title=movies_dic['title'][i],
-                text = '123',
+                text=movies_dic['date'][i],
                 actions=[
-                    URIAction(label='Detail', uri='https://movies.tw.campaign.yahoo.net/i/o/production/movies/August2019/vpVOFf6g6g3WiSd1qFTN-2764x4096.jpeg'),
-                    MessageAction(label='OK', text='米')
-                ]
-            )
-        carousel_group.append(carousel_data)
-        # print(movies_dic['link'][i])
-        # content += '{}\n{}\n'.format(movies_dic['title'][i], movies_dic['link'][i])
-    carousel_template = CarouselTemplate(columns=carousel_group)
-    template_message = TemplateSendMessage(alt_text='Carousel alt text', template=carousel_template)
-    send_template_message(reply_token, template_message)
-    return True
-
-def show_hot_movies_us(reply_token):
-    requests.packages.urllib3.disable_warnings()
-    target_url = 'https://movies.yahoo.com.tw/'
-    rs = requests.session()
-    res = rs.get(target_url, verify=False)
-    res.encoding = 'utf-8'
-    soup = BeautifulSoup(res.text, 'html.parser')
-    link = []
-    movies_title = []
-    img_link = []
-    carousel_group = []
-    # content = ""
-    # 改 list 1,2,3
-    for index, datas in enumerate(soup.select('div#list2 ul a')):
-        if index == 10:
-            break
-        # 找圖片
-        movie_url = datas['href']
-        movie_rs = requests.session()
-        movie_res = movie_rs.get(movie_url, verify=False)
-        movie_res.encoding = 'utf-8'
-        movie_soup = BeautifulSoup(movie_res.text, 'html.parser')
-        movie_img_data = movie_soup.select_one('div .movie_intro_foto img')
-        img_link.append(movie_img_data['src'])
-        link.append(datas['href'])
-        movies_title.append(datas.li.span.text)
-    # 改 list 1,2,3
-    for index, datas in enumerate(soup.select('div#list2 ul .unclick')):
-        if index == 10:
-            break
-        link.insert(int(datas.find('div', {'class': 'num'}).text) - 1, "No URL")
-        img_link.insert(int(datas.find('div', {'class': 'num'}).text) - 1, "No URL")
-        movies_title.insert(int(datas.find('div', {'class': 'num'}).text) - 1, datas.span.text)
-    x = ['title', 'img_link', 'link']
-    movies_group = []
-    movies_group.append(movies_title)
-    movies_group.append(img_link)
-    movies_group.append(link)
-    movies_dic = dict(zip(x, movies_group))
-    for i in range(10):
-        if (movies_dic['link'][i] != 'No URL'):
-            carousel_data = CarouselColumn(
-                thumbnail_image_url=movies_dic['img_link'][i],
-                title=movies_dic['title'][i],
-                text='123',
-                actions=[
-                    URIAction(label='Detail', uri=movies_dic['link'][i]),
-                    MessageAction(label='OK', text='米')
-                ]
-            )
-        else:
-            carousel_data = CarouselColumn(
-                thumbnail_image_url='https://movies.tw.campaign.yahoo.net/i/o/production/movies/August2019/vpVOFf6g6g3WiSd1qFTN-2764x4096.jpeg',
-                title=movies_dic['title'][i],
-                text='123',
-                actions=[
-                    URIAction(label='Detail',
-                              uri='https://movies.yahoo.com.tw/movieinfo_main/%E5%86%B0%E9%9B%AA%E5%A5%87%E7%B7%A32-frozen-2-9597'),
-                    MessageAction(label='OK', text='米')
-                ]
-            )
-        carousel_group.append(carousel_data)
-        # print(movies_dic['link'][i])
-        # content += '{}\n{}\n'.format(movies_dic['title'][i], movies_dic['link'][i])
-    carousel_template = CarouselTemplate(columns=carousel_group)
-    template_message = TemplateSendMessage(alt_text='Carousel alt text', template=carousel_template)
-    send_template_message(reply_token, template_message)
-    return True
-
-def show_hot_movies_un(reply_token):
-    requests.packages.urllib3.disable_warnings()
-    target_url = 'https://movies.yahoo.com.tw/'
-    rs = requests.session()
-    res = rs.get(target_url, verify=False)
-    res.encoding = 'utf-8'
-    soup = BeautifulSoup(res.text, 'html.parser')
-    link = []
-    movies_title = []
-    img_link = []
-    carousel_group = []
-    # content = ""
-    # 改 list 1,2,3
-    for index, datas in enumerate(soup.select('div#list3 ul a')):
-        if index == 10:
-            break
-        # 找圖片
-        movie_url = datas['href']
-        movie_rs = requests.session()
-        movie_res = movie_rs.get(movie_url, verify=False)
-        movie_res.encoding = 'utf-8'
-        movie_soup = BeautifulSoup(movie_res.text, 'html.parser')
-        movie_img_data = movie_soup.select_one('div .movie_intro_foto img')
-        img_link.append(movie_img_data['src'])
-        link.append(datas['href'])
-        movies_title.append(datas.li.span.text)
-    # 改 list 1,2,3
-    for index, datas in enumerate(soup.select('div#list3 ul .unclick')):
-        if index == 10:
-            break
-        link.insert(int(datas.find('div', {'class': 'num'}).text) - 1, "No URL")
-        img_link.insert(int(datas.find('div', {'class': 'num'}).text) - 1, "No URL")
-        movies_title.insert(int(datas.find('div', {'class': 'num'}).text) - 1, datas.span.text)
-    x = ['title', 'img_link', 'link']
-    movies_group = []
-    movies_group.append(movies_title)
-    movies_group.append(img_link)
-    movies_group.append(link)
-    movies_dic = dict(zip(x, movies_group))
-    for i in range(10):
-        if (movies_dic['link'][i] != 'No URL'):
-            carousel_data = CarouselColumn(
-                thumbnail_image_url=movies_dic['img_link'][i],
-                title=movies_dic['title'][i],
-                text='123',
-                actions=[
-                    URIAction(label='Detail', uri=movies_dic['link'][i]),
-                    MessageAction(label='OK', text='米')
-                ]
-            )
-        else:
-            carousel_data = CarouselColumn(
-                thumbnail_image_url='https://movies.tw.campaign.yahoo.net/i/o/production/movies/August2019/vpVOFf6g6g3WiSd1qFTN-2764x4096.jpeg',
-                title=movies_dic['title'][i],
-                text='123',
-                actions=[
-                    URIAction(label='Detail',
+                    URIAction(label='詳細內容',
                               uri='https://movies.tw.campaign.yahoo.net/i/o/production/movies/August2019/vpVOFf6g6g3WiSd1qFTN-2764x4096.jpeg'),
-                    MessageAction(label='OK', text='米')
+                    URIAction(label='預告片',
+                              uri='https://movies.tw.campaign.yahoo.net/i/o/production/movies/August2019/vpVOFf6g6g3WiSd1qFTN-2764x4096.jpeg'),
+                    MessageAction(label='加入最愛', text='米')
                 ]
             )
         carousel_group.append(carousel_data)

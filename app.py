@@ -8,7 +8,6 @@ from linebot.exceptions import InvalidSignatureError
 from linebot.models import MessageEvent, TextMessage, PostbackEvent
 
 from fsm import TocMachine
-from utils import send_text_message, SwitchMenuTo, show_new_movies, show_hot_movies_tw, show_hot_movies_us, show_hot_movies_un, show_movie_leaderboard
 
 load_dotenv()
 
