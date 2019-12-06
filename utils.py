@@ -47,45 +47,68 @@ def SwitchMenuTo(MenuName, event):
 
 def show_new_movies(reply_token):
     requests.packages.urllib3.disable_warnings()
-    target_url = 'https://movies.yahoo.com.tw/'
+    # 本周新片
+    target_url = 'https://movies.yahoo.com.tw/movie_thisweek.html'
     rs = requests.session()
     res = rs.get(target_url, verify=False)
     res.encoding = 'utf-8'
     soup = BeautifulSoup(res.text, 'html.parser')
-    movies_group = []
-    for index, datas in enumerate(soup.select('div._slickcontent')):
-        # 可能可以改成 push 的方式
-        if index == 10:
+    link = []
+    movies_title = []
+    date = []
+    # 預告片
+    movies_pre = []
+    # 電影簡介
+    movies_text = []
+    # 評價
+    movies_star = []
+    img_link = []
+    carousel_group = []
+    # content = ""
+    for index, datas in enumerate(soup.select('ul.release_list li')):
+        # index-1 -> 找的數量
+        if index == 11:
             break
-        data = datas.find('h2')
-        movie_title = data.find('a').text
-        date = datas.find('h3').text
-        expect_find = datas.find('div', {'class':'percent'})
-        if expect_find == None:
-            type = '星級'
-            expect = datas.find('div', {'class':'star_num count'}).text
-        else:
-            type = '期待度'
-            expect = expect_find.find('span').text
-        link = data.find('a')['href']
-        img_link = datas.find('img')['src']
-        #img_link = upload_photo(img_link)
-        movie_data = CarouselColumn(
-            thumbnail_image_url = img_link,
-            title = movie_title,
-            text = date,
-            actions = [
-                URIAction(label = 'Detail', uri = link),
-                MessageAction(label = 'OK', text = '米')
+        img_link.append(datas.find('img')['src'])
+        movie_info_u = datas.find('div', 'release_info_text')
+        movie_info_l = datas.find('div', 'release_btn')
+        movie_info = movie_info_u.find('div', 'release_movie_name')
+        link.append(movie_info.find('a')['href'])
+        movies_title.append(movie_info.find('a').text.lstrip())
+        movies_star.append(movie_info.find('dl', 'levelbox').dt.span.text)
+        date.append(movie_info_u.find('div', 'release_movie_time').text)
+        movies_text.append(movie_info_u.find('div', 'release_text').span.text.lstrip())
+        movies_pre.append(movie_info_l.find_all('a')[1]['href'])
+
+    # 製作line 回復訊息
+    x = ['title', 'img_link', 'link', 'movies_pre', 'date', 'movies_star', 'movies_text']
+    movies_group = []
+    movies_group.append(movies_title)
+    movies_group.append(img_link)
+    movies_group.append(link)
+    movies_group.append(movies_pre)
+    movies_group.append(date)
+    movies_group.append(movies_star)
+    movies_group.append(movies_text)
+    movies_dic = dict(zip(x, movies_group))
+    for i in range(10):
+        detail = movies_dic['date'][i] + '\n' + '網友期待度 ： ' + movies_dic['movies_star'][i] + '\n' + '劇情介紹 ： ' + movies_dic['movies_text'][i]
+        carousel_data = CarouselColumn(
+            thumbnail_image_url=movies_dic['img_link'][i],
+            title=movies_dic['title'][i],
+            text=detail[0:60],
+            actions=[
+                URIAction(label='詳細內容', uri=movies_dic['link'][i]),
+                URIAction(label='預告片', uri=movies_dic['movies_pre'][i]),
+                MessageAction(label='加入最愛', text='米')
             ]
         )
-        movies_group.append(movie_data)
-
-    carousel_template = CarouselTemplate(columns = movies_group)
-    template_message = TemplateSendMessage(alt_text = 'Carousel alt text', template = carousel_template)
+        carousel_group.append(carousel_data)
+        # print(movies_dic['link'][i])
+        # content += '{}\n{}\n'.format(movies_dic['title'][i], movies_dic['link'][i])
+    carousel_template = CarouselTemplate(columns=carousel_group)
+    template_message = TemplateSendMessage(alt_text='Carousel alt text', template=carousel_template)
     send_template_message(reply_token, template_message)
-        #movies_type.append(type)
-        #movies_expect.append(expect)
     return True
 
 def show_movie_leaderboard(reply_token):
@@ -189,20 +212,21 @@ def show_hot_movies(reply_token, chart):
             else:
                 movies_star.append('')
     # 製作line 回復訊息
-    x = ['title', 'img_link', 'link', 'movies_pre', 'date']
+    x = ['title', 'img_link', 'link', 'movies_pre', 'date', 'movies_star']
     movies_group = []
     movies_group.append(movies_title)
     movies_group.append(img_link)
     movies_group.append(link)
     movies_group.append(movies_pre)
     movies_group.append(date)
+    movies_group.append(movies_star)
     movies_dic = dict(zip(x, movies_group))
     for i in range(7):
         if (movies_dic['link'][i] != ''):
             carousel_data = CarouselColumn(
                 thumbnail_image_url=movies_dic['img_link'][i],
                 title=movies_dic['title'][i],
-                text=movies_dic['date'][i],
+                text='上映日期 ： '+movies_dic['date'][i]+'\n'+'網友滿意度 ： '+str((float(movies_dic['movies_star'][i]))*20),
                 actions=[
                     URIAction(label='詳細內容', uri=movies_dic['link'][i]),
                     URIAction(label='預告片', uri=movies_dic['movies_pre'][i]),
@@ -213,7 +237,7 @@ def show_hot_movies(reply_token, chart):
             carousel_data = CarouselColumn(
                 thumbnail_image_url='https://movies.tw.campaign.yahoo.net/i/o/production/movies/August2019/vpVOFf6g6g3WiSd1qFTN-2764x4096.jpeg',
                 title=movies_dic['title'][i],
-                text=movies_dic['date'][i],
+                text='上映日期：'+movies_dic['date'][i],
                 actions=[
                     URIAction(label='詳細內容',
                               uri='https://movies.tw.campaign.yahoo.net/i/o/production/movies/August2019/vpVOFf6g6g3WiSd1qFTN-2764x4096.jpeg'),
