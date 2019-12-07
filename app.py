@@ -183,7 +183,15 @@ def callback():
 
 @app.route("/show-fsm", methods=["GET"])
 def show_fsm():
-    machine.get_graph().draw("fsm.png", prog="dot", format="png")
+    if "graph" not in machine:
+        machine["graph"] = TocMachine(
+            states=machineData["states"],
+            transitions=machineData["transitions"],
+            initial=machineData["initial"],
+            auto_transitions=machineData["auto_transitions"],
+            show_conditions=machineData["show_conditions"]
+        )
+    machine["graph"].get_graph().draw("fsm.png", prog="dot", format="png")
     return send_file("fsm.png", mimetype="image/png")
 
 
