@@ -1,6 +1,6 @@
 from transitions.extensions import GraphMachine
 
-from utils import send_text_message, SwitchMenuTo, show_new_movies, show_hot_movies, show_movie_leaderboard, show_hot_movies_pre, show_movies_news, search_moive
+from utils import send_text_message, SwitchMenuTo, show_new_movies, show_hot_movies, show_movie_leaderboard, show_hot_movies_pre, show_movies_news, search_moive, animate_new_season
 
 
 class TocMachine(GraphMachine):
@@ -31,14 +31,11 @@ class TocMachine(GraphMachine):
 
     def is_going_to_animation_lobby(self, event):
         text = event.message.text
-        return text.lower() == "動畫"
+        return text.lower() == "動畫" or text.lower() == "返回動畫選單"
 
     def on_enter_animation_lobby(self, event):
         SwitchMenuTo("Submenu", event)
         print("I'm entering animation_lobby")
-
-        reply_token = event.reply_token
-        send_text_message(reply_token, "Trigger animation_lobby")
 
     def is_going_to_game_lobby(self, event):
         text = event.message.text
@@ -110,3 +107,22 @@ class TocMachine(GraphMachine):
         reply_token = event.reply_token
         search_moive(reply_token, event.message.text)
         self.go_back_movie_lobby(event)
+
+    def on_enter_animate_new_season(self, event):
+        SwitchMenuTo("Submenu", event)
+        print("I'm entering animate_new_season")
+
+    def is_going_to_animate_new_season(self, event):
+        text = event.message.text
+        return text.lower() == "本季新作"
+
+    def on_enter_do_animate_new_season(self, event):
+        SwitchMenuTo("Submenu", event)
+        print("I'm entering animate_new_season")
+        reply_token = event.reply_token
+        animate_new_season(reply_token, event.message.text)
+        self.go_back_animate_new_season(event)
+
+    def is_going_to_do_animate_new_season(self, event):
+        text = event.message.text
+        return text.lower() == "1" or text.lower() == "2" or text.lower() == "1" or text.lower() == "3" or text.lower() == "4" or text.lower() == "5" or text.lower() == "6" or text.lower() == "7"

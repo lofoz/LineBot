@@ -512,6 +512,78 @@ def search_moive(reply_token, searchname):
         send_text_message(reply_token, mesg)
     return True
 
+def animate_new_season(reply_token, choice):
+    requests.packages.urllib3.disable_warnings()
+    # 查動畫新番
+    target_url = 'https://acg.gamer.com.tw/quarterly.php?d=' + choice
+    rs = requests.session()
+    res = rs.get(target_url, verify=False)
+    res.encoding = 'utf-8'
+    soup = BeautifulSoup(res.text, 'html.parser')
+    # 動畫連結
+    link = []
+    # 動畫名稱
+    animates_title = []
+    # 上映日期
+    date = []
+    # 評分
+    animates_star = []
+    # 人氣
+    animates_hot = []
+    # 動畫圖片
+    img_link = []
+    # 動畫類別
+    animates_text = []
+    carousel_group = []
+    # content = ""
+    for index, datas in enumerate(soup.select('div.ACG-mainbox1')):
+        # index-1 -> 找的數量
+        if index == 11:
+            break
+        acg_info = datas.find('div', 'ACG-mainbox2')
+        link.append('https:' + acg_info.find('h1', 'ACG-maintitle').find('a')['href'])
+        animates_title.append(acg_info.find('h1', 'ACG-maintitle').find('a').text)
+        type = acg_info.find_all('ul')
+        # more_type[1] 放心得 , more_type[2] 放相關新聞
+        more_type = type[0].find_all('li')
+        date.append(more_type[0].text)
+        animates_text.append(type[1].li.text)
+        img_link.append(acg_info.find('div', 'ACG-mainbox2B').a.img['src'])
+        animates_star.append('評分：' + datas.find('div', 'ACG-mainbox4').find('p', 'ACG-mainboxpoint').span.text)
+        animates_hot.append('人氣：' + datas.find('div', 'ACG-mainbox4').find('p', 'ACG-mainplay').span.text)
+
+    # 製作line 回復訊息
+    x = ['title', 'img_link', 'link', 'date', 'animates_star', 'animates_text', 'animates_hot']
+    animates_group = []
+    animates_group.append(animates_title)
+    animates_group.append(img_link)
+    animates_group.append(link)
+    animates_group.append(date)
+    animates_group.append(animates_star)
+    animates_group.append(animates_text)
+    animates_group.append(animates_hot)
+    animates_dic = dict(zip(x, animates_group))
+    for i in range(len(animates_title)):
+        detail = animates_dic['date'][i] + '\n' + animates_dic['animates_hot'][i] + '　' + animates_dic['animates_star'][
+            i] + '\n' + animates_dic['animates_text'][i]
+        carousel_data = CarouselColumn(
+            thumbnail_image_url=animates_dic['img_link'][i],
+            title=animates_dic['title'][i][0:40],
+            text=detail[0:60],
+            actions=[
+                URIAction(label='詳細內容', uri=animates_dic['link'][i]),
+                # URIAction(label='相關新聞', uri=movies_dic['movies_pre'][i]),
+                MessageAction(label='加入最愛', text='米')
+            ]
+        )
+        carousel_group.append(carousel_data)
+        # print(movies_dic['link'][i])
+        # content += '{}\n{}\n'.format(movies_dic['title'][i], movies_dic['link'][i])
+    carousel_template = CarouselTemplate(columns=carousel_group, image_aspect_ratio='square', image_size='cover')
+    template_message = TemplateSendMessage(alt_text='Carousel alt text', template=carousel_template)
+    send_template_message(reply_token, template_message)
+    return True
+
 def upload_photo(image_url):
     client_id = '08dd33b004aeb70'
     client_secret = 'df0e8f73218d6046b49cf3d481f898ff658868fa'
