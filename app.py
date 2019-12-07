@@ -20,7 +20,10 @@ machine = TocMachine(
         "game_lobby",
         "new_movie",
         "hot_movie",
-        "movie_leaderboard"
+        "movie_leaderboard",
+        "movie_news",
+        "search_movie",
+        "do_search_movie"
     ],
     transitions=[
         {
@@ -54,10 +57,27 @@ machine = TocMachine(
             "conditions": "is_going_to_movie_leaderboard",
         },
         {
+            "trigger": "advance",
+            "source": "movie_lobby",
+            "dest": "movie_news",
+            "conditions": "is_going_to_movie_news",
+        },
+        {
             "trigger": "advance_postback",
             "source": "movie_lobby",
             "dest": "hot_movie",
             "conditions": "is_going_to_hot_movie",
+        },
+        {
+            "trigger": "advance",
+            "source": "movie_lobby",
+            "dest": "search_movie",
+            "conditions": "is_going_to_search_movie",
+        },
+        {
+            "trigger": "advance",
+            "source": "search_movie",
+            "dest": "do_search_movie",
         },
         # 按下返回主選單
         {
@@ -69,7 +89,7 @@ machine = TocMachine(
         # 無條件返回 movie_lobby
         {
             "trigger": "go_back_movie_lobby",
-            "source": ["new_movie", "hot_movie", "movie_leaderboard"],
+            "source": ["new_movie", "hot_movie", "movie_leaderboard", "movie_news", "do_search_movie"],
             "dest": "movie_lobby",
         },
     ],

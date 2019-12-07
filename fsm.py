@@ -1,8 +1,6 @@
 from transitions.extensions import GraphMachine
 
-from utils import send_text_message, SwitchMenuTo, show_new_movies, show_hot_movies, show_movie_leaderboard
-
-from linebot.models import MessageEvent, TextMessage, PostbackEvent
+from utils import send_text_message, SwitchMenuTo, show_new_movies, show_hot_movies, show_movie_leaderboard, show_hot_movies_pre, show_movies_news, search_moive
 
 
 class TocMachine(GraphMachine):
@@ -75,11 +73,40 @@ class TocMachine(GraphMachine):
 
     def is_going_to_hot_movie(self, event):
         text = event.postback.data
-        return text.lower() == "台北票房榜" or text.lower() == "全美票房榜" or text.lower() == "年度票房榜"
+        return text.lower() == "台北票房榜" or text.lower() == "全美票房榜" or text.lower() == "年度票房榜" or text.lower() == "預告片榜"
 
     def on_enter_hot_movie(self, event):
         print("I'm entering new_movie")
         text = event.postback.data
         reply_token = event.reply_token
-        show_hot_movies(reply_token, text.lower())
+        if text.lower() == "預告片榜":
+            show_hot_movies_pre(reply_token)
+        else:
+            show_hot_movies(reply_token, text.lower())
+        self.go_back_movie_lobby(event)
+
+    def is_going_to_movie_news(self, event):
+        text = event.message.text
+        return text.lower() == "電影新聞"
+
+    def on_enter_movie_news(self, event):
+        print("I'm entering movie_news")
+        reply_token = event.reply_token
+        show_movies_news(reply_token)
+        self.go_back_movie_lobby(event)
+
+    def is_going_to_search_movie(self, event):
+        text = event.message.text
+        return text.lower() == "查電影"
+
+    def on_enter_search_movie(self, event):
+        SwitchMenuTo("Submenu", event)
+        print("I'm entering search_movie")
+        reply_token = event.reply_token
+        send_text_message(reply_token, "請輸入欲查詢電影")
+
+    def on_enter_do_search_movie(self, event):
+        print("I'm entering do_search_movie")
+        reply_token = event.reply_token
+        search_moive(reply_token, event.message.text)
         self.go_back_movie_lobby(event)
