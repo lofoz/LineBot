@@ -20,7 +20,8 @@ from imgurpython import ImgurClient
 import requests
 from bs4 import BeautifulSoup
 
-
+favorite_movies = {}
+favorite_animates = {}
 channel_access_token = os.environ.get("LINE_CHANNEL_ACCESS_TOKEN")
 
 
@@ -66,8 +67,8 @@ def show_new_movies(reply_token):
     carousel_group = []
     # content = ""
     for index, datas in enumerate(soup.select('ul.release_list li')):
-        # index-1 -> 找的數量
-        if index == 11:
+        # index -> 找的數量
+        if index == 10:
             break
         img_link.append(datas.find('img')['src'])
         movie_info_u = datas.find('div', 'release_info_text')
@@ -91,7 +92,7 @@ def show_new_movies(reply_token):
     movies_group.append(movies_star)
     movies_group.append(movies_text)
     movies_dic = dict(zip(x, movies_group))
-    for i in range(10):
+    for i in range(len(movies_title)):
         detail = movies_dic['date'][i] + '\n' + '網友期待度 ： ' + movies_dic['movies_star'][i] + '\n' + '劇情介紹 ： ' + movies_dic['movies_text'][i]
         carousel_data = CarouselColumn(
             thumbnail_image_url=movies_dic['img_link'][i],
@@ -100,7 +101,7 @@ def show_new_movies(reply_token):
             actions=[
                 URIAction(label='詳細內容', uri=movies_dic['link'][i]),
                 URIAction(label='預告片', uri=movies_dic['movies_pre'][i]),
-                MessageAction(label='加入最愛', text='米')
+                PostbackAction(label='加入最愛', data='movie,' + movies_dic['link'][i])
             ]
         )
         carousel_group.append(carousel_data)
@@ -242,7 +243,7 @@ def show_hot_movies(reply_token, chart):
                 actions=[
                     URIAction(label='詳細內容', uri=movies_dic['link'][i]),
                     URIAction(label='預告片', uri=movies_dic['movies_pre'][i]),
-                    MessageAction(label='加入最愛', text='米')
+                    PostbackAction(label='加入最愛', data='movie,'+movies_dic['link'][i])
                 ]
             )
         else:
@@ -255,7 +256,7 @@ def show_hot_movies(reply_token, chart):
                               uri='https://movies.tw.campaign.yahoo.net/i/o/production/movies/August2019/vpVOFf6g6g3WiSd1qFTN-2764x4096.jpeg'),
                     URIAction(label='預告片',
                               uri='https://movies.tw.campaign.yahoo.net/i/o/production/movies/August2019/vpVOFf6g6g3WiSd1qFTN-2764x4096.jpeg'),
-                    MessageAction(label='加入最愛', text='米')
+                    PostbackAction(label='加入最愛', data='No')
                 ]
             )
         carousel_group.append(carousel_data)
@@ -366,7 +367,7 @@ def show_hot_movies_pre(reply_token):
                 actions=[
                     URIAction(label='詳細內容', uri=movies_dic['link'][i]),
                     URIAction(label='預告片', uri=movies_dic['movies_pre'][i]),
-                    MessageAction(label='加入最愛', text='米')
+                    PostbackAction(label='加入最愛', data='movie,'+ movies_dic['link'][i])
                 ]
             )
         else:
@@ -379,7 +380,7 @@ def show_hot_movies_pre(reply_token):
                               uri='https://movies.tw.campaign.yahoo.net/i/o/production/movies/August2019/vpVOFf6g6g3WiSd1qFTN-2764x4096.jpeg'),
                     URIAction(label='預告片',
                               uri='https://movies.tw.campaign.yahoo.net/i/o/production/movies/August2019/vpVOFf6g6g3WiSd1qFTN-2764x4096.jpeg'),
-                    MessageAction(label='加入最愛', text='米')
+                    PostbackAction(label='加入最愛', data='No')
                 ]
             )
         carousel_group.append(carousel_data)
@@ -407,8 +408,8 @@ def show_movies_news(reply_token):
     imagecarousel_group = []
     # content = ""
     for index, datas in enumerate(soup.select('li.news_content')):
-        # index-1 -> 找的數量
-        if index == 11:
+        # index -> 找的數量
+        if index == 10:
             break
         link.append(datas.find('a')['href'])
         img_link.append(datas.find('img')['src'])
@@ -421,7 +422,7 @@ def show_movies_news(reply_token):
     movies_group.append(img_link)
     movies_group.append(link)
     movies_dic = dict(zip(x, movies_group))
-    for i in range(10):
+    for i in range(len(news_title)):
         imagecarouse_data = ImageCarouselColumn(
             image_url=movies_dic['img_link'][i],
             action=URIAction(
@@ -464,8 +465,8 @@ def search_moive(reply_token, searchname):
     search_num_c = search.find('div', 'search_num _c').span.text
     if search_num_c != '0':
         for index, datas in enumerate(search.select('ul.release_list.mlist li')):
-            # index-1 -> 找的數量
-            if index == 11:
+            # index -> 找的數量
+            if index == 10:
                 break
             img_link.append(datas.find('img')['src'])
             movie_info_u = datas.find('div', 'searchpage_info')
@@ -498,7 +499,7 @@ def search_moive(reply_token, searchname):
                 actions=[
                     URIAction(label='詳細內容', uri=movies_dic['link'][i]),
                     URIAction(label='預告片', uri=movies_dic['movies_pre'][i] if movies_dic['movies_pre'][i] != '' else movies_dic['img_link'][i]),
-                    MessageAction(label='加入最愛', text='米')
+                    PostbackAction(label='加入最愛', data='movie,'+movies_dic['link'][i])
                 ]
             )
             carousel_group.append(carousel_data)
@@ -514,8 +515,9 @@ def search_moive(reply_token, searchname):
 
 def animate_new_season(reply_token, choice):
     requests.packages.urllib3.disable_warnings()
+    num = '1' if choice == '週一' else '2' if choice == '週二' else '3' if choice == '週三' else '4' if choice == '週四' else '5' if choice == '週五' else '6' if choice == '週六' else '7'
     # 查動畫新番
-    target_url = 'https://acg.gamer.com.tw/quarterly.php?d=' + choice
+    target_url = 'https://acg.gamer.com.tw/quarterly.php?d=' + num
     rs = requests.session()
     res = rs.get(target_url, verify=False)
     res.encoding = 'utf-8'
@@ -537,8 +539,8 @@ def animate_new_season(reply_token, choice):
     carousel_group = []
     # content = ""
     for index, datas in enumerate(soup.select('div.ACG-mainbox1')):
-        # index-1 -> 找的數量
-        if index == 11:
+        # index -> 找的數量
+        if index == 10:
             break
         acg_info = datas.find('div', 'ACG-mainbox2')
         link.append('https:' + acg_info.find('h1', 'ACG-maintitle').find('a')['href'])
@@ -573,7 +575,7 @@ def animate_new_season(reply_token, choice):
             actions=[
                 URIAction(label='詳細內容', uri=animates_dic['link'][i]),
                 # URIAction(label='相關新聞', uri=movies_dic['movies_pre'][i]),
-                MessageAction(label='加入最愛', text='米')
+                PostbackAction(label='加入最愛', data='animatehot,'+animates_dic['link'][i])
             ]
         )
         carousel_group.append(carousel_data)
@@ -582,6 +584,233 @@ def animate_new_season(reply_token, choice):
     carousel_template = CarouselTemplate(columns=carousel_group, image_aspect_ratio='square', image_size='cover')
     template_message = TemplateSendMessage(alt_text='Carousel alt text', template=carousel_template)
     send_template_message(reply_token, template_message)
+    return True
+
+def show_animate_leaderboard(reply_token):
+    buttons_template = ButtonsTemplate(
+        title = '排行榜',
+        text = '請按下方選項',
+        actions = [
+            PostbackAction(label = '人氣排行榜', data = '人氣'),
+            PostbackAction(label = '評分排行榜', data = '評分'),
+            PostbackAction(label = '期待排行榜', data = '期待')
+        ])
+    template_message = TemplateSendMessage(alt_text = 'Buttons alt text', template = buttons_template)
+    send_template_message(reply_token, template_message)
+    return True
+
+def show_hot_animate(reply_token, chart):
+    requests.packages.urllib3.disable_warnings()
+    # 查 排行
+    if chart == '人氣':
+        target_url = 'https://acg.gamer.com.tw/billboard.php?t=2&p=anime'
+    elif chart == '評分':
+        target_url = 'https://acg.gamer.com.tw/billboard.php?t=3&p=anime'
+    elif chart == '期待':
+        target_url = 'https://acg.gamer.com.tw/billboard.php?t=4&p=anime'
+    rs = requests.session()
+    res = rs.get(target_url, verify=False)
+    res.encoding = 'utf-8'
+    soup = BeautifulSoup(res.text, 'html.parser')
+    # 動畫連結
+    link = []
+    # 動畫名稱
+    animates_title = []
+    # 上映日期
+    date = []
+    # 評分
+    animates_star = []
+    # 人氣
+    animates_hot = []
+    # 動畫圖片
+    img_link = []
+    # 動畫類別
+    animates_text = []
+    carousel_group = []
+    # content = ""
+    for index, datas in enumerate(soup.select('div.ACG-mainbox1')):
+        # index-1 -> 找的數量
+        if index == 10:
+            break
+        acg_info = datas.find('div', 'ACG-mainbox2')
+        link.append('https:' + acg_info.find('h1', 'ACG-maintitle').find('a')['href'])
+        animates_title.append(acg_info.find('h1', 'ACG-maintitle').find('a').text)
+        type = acg_info.find_all('ul')
+        # more_type[1] 放心得 , more_type[2] 放相關新聞
+        more_type = type[0].find_all('li')
+        date.append(more_type[0].text)
+        animates_text.append(type[1].li.text)
+        img_link.append(acg_info.find('div', 'ACG-mainbox2B').a.img['src'])
+        animates_star.append('評分：' + datas.find('div', 'ACG-mainbox4').find('p', 'ACG-mainboxpoint').span.text)
+        animates_hot.append('人氣：' + datas.find('div', 'ACG-mainbox4').find('p', 'ACG-mainplay').span.text)
+
+    # 製作line 回復訊息
+    x = ['title', 'img_link', 'link', 'date', 'animates_star', 'animates_text', 'animates_hot']
+    animates_group = []
+    animates_group.append(animates_title)
+    animates_group.append(img_link)
+    animates_group.append(link)
+    animates_group.append(date)
+    animates_group.append(animates_star)
+    animates_group.append(animates_text)
+    animates_group.append(animates_hot)
+    animates_dic = dict(zip(x, animates_group))
+    for i in range(len(animates_title)):
+        detail = animates_dic['date'][i] + '\n' + animates_dic['animates_hot'][i] + '　' + animates_dic['animates_star'][i] + '\n' + animates_dic['animates_text'][i]
+        carousel_data = CarouselColumn(
+            thumbnail_image_url=animates_dic['img_link'][i],
+            title=animates_dic['title'][i][0:40],
+            text=detail[0:60],
+            actions=[
+                URIAction(label='詳細內容', uri=animates_dic['link'][i]),
+                # URIAction(label='相關新聞', uri=movies_dic['movies_pre'][i]),
+                PostbackAction(label='加入最愛', data='animate,'+animates_dic['link'][i])
+            ]
+        )
+        carousel_group.append(carousel_data)
+        # print(movies_dic['link'][i])
+        # content += '{}\n{}\n'.format(movies_dic['title'][i], movies_dic['link'][i])
+    carousel_template = CarouselTemplate(columns=carousel_group, image_aspect_ratio='square', image_size='cover')
+    template_message = TemplateSendMessage(alt_text='Carousel alt text', template=carousel_template)
+    send_template_message(reply_token, template_message)
+    return True
+
+def show_animates_news(reply_token):
+    requests.packages.urllib3.disable_warnings()
+    # 查 新聞
+    target_url = 'https://acg.gamer.com.tw/news.php?p=anime'
+    rs = requests.session()
+    res = rs.get(target_url, verify=False)
+    res.encoding = 'utf-8'
+    soup = BeautifulSoup(res.text, 'html.parser')
+    # 新聞連結
+    link = []
+    # 新聞名稱
+    news_title = []
+    # 新聞圖片
+    img_link = []
+    imagecarousel_group = []
+    # content = ""
+    for index, datas in enumerate(soup.select('div.BH-lbox.GN-lbox2 div.GN-lbox2B')):
+        # index -> 找的數量
+        if index == 10:
+            break
+        link.append('https:' + datas.find('div', 'GN-lbox2E').find('a')['href'])
+        img_link.append(datas.find('div', 'GN-lbox2E').find('img')['src'])
+        news_title.append(datas.find('h1', 'GN-lbox2D').find('a').text)
+
+    # 製作line 回復訊息
+    x = ['title', 'img_link', 'link']
+    movies_group = []
+    movies_group.append(news_title)
+    movies_group.append(img_link)
+    movies_group.append(link)
+    movies_dic = dict(zip(x, movies_group))
+    for i in range(len(news_title)):
+        imagecarouse_data = ImageCarouselColumn(
+            image_url=movies_dic['img_link'][i],
+            action=URIAction(
+                uri=movies_dic['link'][i],
+                label=movies_dic['title'][i][0:12])
+        )
+        imagecarousel_group.append(imagecarouse_data)
+
+    image_carousel_template = ImageCarouselTemplate(columns=imagecarousel_group)
+    template_message = TemplateSendMessage(alt_text='ImageCarousel alt text', template=image_carousel_template)
+    send_template_message(reply_token, template_message)
+    return True
+
+def search_animate(reply_token, searchname):
+    requests.packages.urllib3.disable_warnings()
+    # 查 新聞
+    target_url = 'https://acg.gamer.com.tw/search.php?sp=t4&kw=' + searchname
+    rs = requests.session()
+    res = rs.get(target_url, verify=False)
+    res.encoding = 'utf-8'
+    soup = BeautifulSoup(res.text, 'html.parser')
+    # 動畫連結
+    link = []
+    # 動畫名稱
+    animates_title = []
+    # 動畫圖片
+    img_link = []
+    # 動畫簡介
+    animates_text = []
+    carousel_group = []
+    # content = ""
+    # 找到幾筆
+    if soup.select_one('div.BH-lbox.GU-lbox9').find('p', {'align':'center'}) != None:
+        search_num = soup.select_one('div.BH-lbox.GU-lbox9').find('p', {'align':'center'}).span.text
+        for index, datas in enumerate(soup.select('div.BH-lbox.GU-lbox9 table.search_table')):
+            # index -> 找的數量
+            if index == 10:
+                break
+            animates_text.append(datas.find('td', {'valign':'top'}).text.lstrip().splitlines()[2][:-4])
+            animates_title.append(datas.find('td', {'valign':'top'}).text.lstrip().splitlines()[1])
+            link.append('https:' + datas.find('td', {'valign':'top'}).find('p', 'search_title').a['href'])
+            img_link.append(datas.find('td', {'align':'center'}).img['src'])
+
+        # 製作line 回復訊息
+        x = ['title', 'img_link', 'link', 'animates_text']
+        animates_group = []
+        animates_group.append(animates_title)
+        animates_group.append(img_link)
+        animates_group.append(link)
+        animates_group.append(animates_text)
+        animates_dic = dict(zip(x, animates_group))
+        for i in range(len(animates_title)):
+            carousel_data = CarouselColumn(
+                thumbnail_image_url=animates_dic['img_link'][i],
+                title=animates_dic['title'][i][0:40],
+                text=animates_dic['animates_text'][i][0:60],
+                actions=[
+                    URIAction(label='詳細內容', uri=animates_dic['link'][i]),
+                    # URIAction(label='相關新聞', uri=movies_dic['movies_pre'][i]),
+                    PostbackAction(label='加入最愛', data='animate,'+animates_dic['link'][i])
+                ]
+            )
+            carousel_group.append(carousel_data)
+            # print(movies_dic['link'][i])
+            # content += '{}\n{}\n'.format(movies_dic['title'][i], movies_dic['link'][i])
+        carousel_template = CarouselTemplate(columns=carousel_group, image_aspect_ratio='square', image_size='cover')
+        template_message = TemplateSendMessage(alt_text='Carousel alt text', template=carousel_template)
+        send_template_message(reply_token, template_message)
+    else:
+        mesg = '您的動畫搜尋結果：共 0 筆，符合' + searchname
+        send_text_message(reply_token, mesg)
+    return True
+
+def add_favorite(event, data):
+    url = data.split(',')
+    if url[0] == 'movie':
+        if url[1] in favorite_movies[event.source.user_id]:
+            return True
+        else:
+            if len(favorite_movies[event.source.user_id]) < 10:
+                favorite_movies[event.source.user_id].append(url[1])
+            else:
+                return True
+    else:
+        if url[1] in favorite_animates[event.source.user_id]:
+            return True
+        else:
+            if len(favorite_animates[event.source.user_id]) < 10:
+                favorite_animates[event.source.user_id].append(url[1])
+            else:
+                return True
+    return True
+
+def my_favorite_confirm(reply_token):
+    confirm_template = ConfirmTemplate(text='我的動畫 or 我的電影?', actions=[
+        PostbackAction(label='我的動畫', data='動畫'),
+        PostbackAction(label='我的電影', data='電影')
+    ])
+    template_message = TemplateSendMessage(alt_text='Confirm alt text', template=confirm_template)
+    send_template_message(reply_token, template_message)
+    return True
+
+def show_favorite(event, text):
+    send_text_message(event.reply_token, text)
     return True
 
 def upload_photo(image_url):
