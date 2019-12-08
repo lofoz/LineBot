@@ -784,19 +784,25 @@ def add_favorite(event, data):
     url = data.split(',')
     if url[0] == 'movie':
         if url[1] in favorite_movies[event.source.user_id]:
+            send_text_message(event.reply_token, '已在我的最愛')
             return True
         else:
             if len(favorite_movies[event.source.user_id]) < 10:
                 favorite_movies[event.source.user_id].append(url[1])
+                send_text_message(event.reply_token, '成功加入我的最愛')
             else:
+                send_text_message(event.reply_token, '我的最愛已滿(最多10個)')
                 return True
     else:
         if url[1] in favorite_animates[event.source.user_id]:
+            send_text_message(event.reply_token, '已在我的最愛')
             return True
         else:
             if len(favorite_animates[event.source.user_id]) < 10:
                 favorite_animates[event.source.user_id].append(url[1])
+                send_text_message(event.reply_token, '成功加入我的最愛')
             else:
+                send_text_message(event.reply_token, '我的最愛已滿(最多10個)')
                 return True
     return True
 
@@ -810,7 +816,89 @@ def my_favorite_confirm(reply_token):
     return True
 
 def show_favorite(event, text):
-    send_text_message(event.reply_token, text)
+    if text == "動畫" or text == "animate":
+        if len(favorite_animates[event.source.user_id]) != 0:
+            carousel_group = []
+            for target_url in favorite_animates[event.source.user_id]:
+                requests.packages.urllib3.disable_warnings()
+                # 印 我的最愛
+                rs = requests.session()
+                res = rs.get(target_url, verify=False)
+                res.encoding = 'utf-8'
+                soup = BeautifulSoup(res.text, 'html.parser')
+                # content = ""
+                datas = soup.select_one('div.BH-lbox.ACG-mster_box1.hreview-aggregate.hreview')
+                title = datas.find('h1').text
+                detail = datas.find('ul', 'ACG-box1listA').text.strip()
+                img_link = datas.find('div', 'ACG-box1-left').img['src']
+
+                # 製作line 回復訊息
+                carousel_data = CarouselColumn(
+                        thumbnail_image_url=img_link,
+                        title=title[0:40],
+                        text=detail[0:60],
+                        actions=[
+                        URIAction(label='詳細內容', uri=target_url),
+                        # URIAction(label='相關新聞', uri=movies_dic['movies_pre'][i]),
+                        PostbackAction(label='移除最愛', data='delete,animate,' + target_url)
+                    ]
+                )
+                carousel_group.append(carousel_data)
+                # print(movies_dic['link'][i])
+                # content += '{}\n{}\n'.format(movies_dic['title'][i], movies_dic['link'][i])
+            carousel_template = CarouselTemplate(columns=carousel_group, image_aspect_ratio='square', image_size='cover')
+            template_message = TemplateSendMessage(alt_text='Carousel alt text', template=carousel_template)
+            send_template_message(event.reply_token, template_message)
+        else:
+            send_text_message(event.reply_token, '我的最愛目前沒有內容')
+    else:
+        if len(favorite_movies[event.source.user_id]) != 0:
+            carousel_group = []
+            for target_url in favorite_movies[event.source.user_id]:
+                requests.packages.urllib3.disable_warnings()
+                # 印 我的最愛
+                rs = requests.session()
+                res = rs.get(target_url, verify=False)
+                res.encoding = 'utf-8'
+                soup = BeautifulSoup(res.text, 'html.parser')
+                # content = ""
+                datas = soup.select_one('div #content_l')
+                title = datas.find('div', 'movie_intro_info_r').h1.text
+                date = datas.find('div', 'movie_intro_info_r').span.text
+                img_link = datas.find('div', 'movie_intro_info_l').img['src']
+                movie_pre = datas.find('div', 'l_box have_arbox _c').a['href']
+
+                # 製作line 回復訊息
+                carousel_data = CarouselColumn(
+                    thumbnail_image_url=img_link,
+                    title=title[0:40],
+                    text=date[0:60],
+                    actions=[
+                        URIAction(label='詳細內容', uri=target_url),
+                        URIAction(label='預告片', uri=movie_pre),
+                        PostbackAction(label='移除最愛', data='delete,movie,' + target_url)
+                    ]
+                )
+                carousel_group.append(carousel_data)
+                # print(movies_dic['link'][i])
+                # content += '{}\n{}\n'.format(movies_dic['title'][i], movies_dic['link'][i])
+            carousel_template = CarouselTemplate(columns=carousel_group, image_aspect_ratio='square', image_size='cover')
+            template_message = TemplateSendMessage(alt_text='Carousel alt text', template=carousel_template)
+            send_template_message(event.reply_token, template_message)
+        else:
+            send_text_message(event.reply_token, '我的最愛目前沒有內容')
+    return True
+
+def delete_favorite(event, data):
+    url = data.split(',')
+    if url[0] == 'movie':
+        if url[1] in favorite_movies[event.source.user_id]:
+            favorite_movies[event.source.user_id].remove(url[1])
+            return True
+    else:
+        if url[1] in favorite_animates[event.source.user_id]:
+            favorite_animates[event.source.user_id].remove(url[1])
+            return True
     return True
 
 def upload_photo(image_url):

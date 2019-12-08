@@ -11,7 +11,8 @@ from utils import (
     favorite_movies,
     favorite_animates,
     my_favorite_confirm,
-    show_favorite
+    show_favorite,
+    delete_favorite
 )
 
 machine = {}
@@ -201,7 +202,7 @@ class TocMachine(GraphMachine):
         print("I'm entering add_favorite")
         text = event.postback.data
         data = text.split(',')[0]
-        add_favorite(event, text.lower())
+        add_favorite(event, text)
         if data == 'movie':
             self.go_back_movie_lobby(event)
         elif data == 'animate':
@@ -257,3 +258,17 @@ class TocMachine(GraphMachine):
             self.go_back_animate_new_season(event)
         elif favorite_state[event.source.user_id] == "search_animate":
             self.go_back_search_animate(event)
+
+    def is_going_to_delete_favorite(self, event):
+        text = event.postback.data
+        data = text.split(',')[0]
+        return data == 'delete'
+
+    def on_enter_delete_favorite(self, event):
+        print("I'm entering add_favorite")
+        text = event.postback.data
+        data = text.split(',')
+        text = data[1]+','+data[2]
+        event.postback.data = data[1]
+        delete_favorite(event, text)
+        self.go_back_show_favorite(event)

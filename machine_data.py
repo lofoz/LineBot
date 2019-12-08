@@ -20,7 +20,8 @@ machineData = {
         "add_favorite",
         "my_favorite",
         "show_favorite",
-        "leave_favorite"
+        "leave_favorite",
+        "delete_favorite"
     ],
     "transitions" : [
         {
@@ -110,6 +111,19 @@ machineData = {
             "source": "my_favorite",
             "dest": "show_favorite",
             "conditions": "is_going_to_show_favorite",
+        },
+        # 刪除最愛
+        {
+            "trigger": "advance_postback",
+            "source": "show_favorite",
+            "dest": "delete_favorite",
+            "conditions": "is_going_to_delete_favorite",
+        },
+        # 無條件返回 看我的最愛
+        {
+            "trigger": "go_back_show_favorite",
+            "source": "delete_favorite",
+            "dest": "show_favorite",
         },
         # 返回 我的最愛
         {
