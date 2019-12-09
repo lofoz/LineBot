@@ -24,15 +24,14 @@ favorite_movies = {}
 favorite_animates = {}
 channel_access_token = os.environ.get("LINE_CHANNEL_ACCESS_TOKEN")
 
-
-def send_text_message(reply_token, text):
+def push_text_message(event, text):
     line_bot_api = LineBotApi(channel_access_token)
-    line_bot_api.reply_message(reply_token, TextSendMessage(text=text))
+    line_bot_api.push_message(event.source.user_id, TextSendMessage(text=text))
     return True
 
-def send_template_message(reply_token, template):
+def push_template_message(event, template):
     line_bot_api = LineBotApi(channel_access_token)
-    line_bot_api.reply_message(reply_token, template)
+    line_bot_api.push_message(event.source.user_id, template)
     return True
 
 def SwitchMenuTo(MenuName, event):
@@ -46,7 +45,7 @@ def SwitchMenuTo(MenuName, event):
             return True
     return False
 
-def show_new_movies(reply_token):
+def show_new_movies(event):
     requests.packages.urllib3.disable_warnings()
     # 本周新片
     target_url = 'https://movies.yahoo.com.tw/movie_thisweek.html'
@@ -109,10 +108,10 @@ def show_new_movies(reply_token):
         # content += '{}\n{}\n'.format(movies_dic['title'][i], movies_dic['link'][i])
     carousel_template = CarouselTemplate(columns=carousel_group, image_aspect_ratio='square', image_size='cover')
     template_message = TemplateSendMessage(alt_text='Carousel alt text', template=carousel_template)
-    send_template_message(reply_token, template_message)
+    push_template_message(event, template_message)
     return True
 
-def show_movie_leaderboard(reply_token):
+def show_movie_leaderboard(event):
     requests.packages.urllib3.disable_warnings()
     target_url = 'https://movies.yahoo.com.tw/'
     rs = requests.session()
@@ -135,10 +134,10 @@ def show_movie_leaderboard(reply_token):
             PostbackAction(label='預告片榜', data='預告片榜')
         ])
     template_message = TemplateSendMessage(alt_text = 'Buttons alt text', template = buttons_template)
-    send_template_message(reply_token, template_message)
+    push_template_message(event, template_message)
     return True
 
-def show_hot_movies(reply_token, chart):
+def show_hot_movies(event, chart):
     requests.packages.urllib3.disable_warnings()
     # 年度票房 or 全美票房 or 台北票房
     if chart == '台北票房榜':
@@ -264,10 +263,10 @@ def show_hot_movies(reply_token, chart):
         # content += '{}\n{}\n'.format(movies_dic['title'][i], movies_dic['link'][i])
     carousel_template = CarouselTemplate(columns=carousel_group, image_aspect_ratio='square', image_size='cover')
     template_message = TemplateSendMessage(alt_text='Carousel alt text', template=carousel_template)
-    send_template_message(reply_token, template_message)
+    push_template_message(event, template_message)
     return True
 
-def show_hot_movies_pre(reply_token):
+def show_hot_movies_pre(event):
     requests.packages.urllib3.disable_warnings()
     # 預告片榜
     target_url = 'https://movies.yahoo.com.tw/chart.html?cate=trailer'
@@ -388,10 +387,10 @@ def show_hot_movies_pre(reply_token):
         # content += '{}\n{}\n'.format(movies_dic['title'][i], movies_dic['link'][i])
     carousel_template = CarouselTemplate(columns=carousel_group, image_aspect_ratio='square', image_size='cover')
     template_message = TemplateSendMessage(alt_text='Carousel alt text', template=carousel_template)
-    send_template_message(reply_token, template_message)
+    push_template_message(event, template_message)
     return  True
 
-def show_movies_news(reply_token):
+def show_movies_news(event):
     requests.packages.urllib3.disable_warnings()
     # 新聞
     target_url = 'https://movies.yahoo.com.tw/tagged/movieheadline'
@@ -433,10 +432,10 @@ def show_movies_news(reply_token):
 
     image_carousel_template = ImageCarouselTemplate(columns=imagecarousel_group)
     template_message = TemplateSendMessage(alt_text='ImageCarousel alt text', template=image_carousel_template)
-    send_template_message(reply_token, template_message)
+    push_template_message(event, template_message)
     return True
 
-def search_moive(reply_token, searchname):
+def search_moive(event, searchname):
     requests.packages.urllib3.disable_warnings()
     # 查電影
     target_url = 'https://movies.yahoo.com.tw/moviesearch_result.html?keyword=' + searchname + '&type=movie'
@@ -507,13 +506,13 @@ def search_moive(reply_token, searchname):
             # content += '{}\n{}\n'.format(movies_dic['title'][i], movies_dic['link'][i])
         carousel_template = CarouselTemplate(columns=carousel_group, image_aspect_ratio='square', image_size='cover')
         template_message = TemplateSendMessage(alt_text='Carousel alt text', template=carousel_template)
-        send_template_message(reply_token, template_message)
+        push_template_message(event, template_message)
     else:
         mesg = '您的電影搜尋結果：共 ' + search_num_c + '筆，符合' + searchname
-        send_text_message(reply_token, mesg)
+        push_text_message(event, mesg)
     return True
 
-def animate_new_season(reply_token, choice):
+def animate_new_season(event, choice):
     requests.packages.urllib3.disable_warnings()
     num = '1' if choice == '週一' else '2' if choice == '週二' else '3' if choice == '週三' else '4' if choice == '週四' else '5' if choice == '週五' else '6' if choice == '週六' else '7'
     # 查動畫新番
@@ -583,10 +582,10 @@ def animate_new_season(reply_token, choice):
         # content += '{}\n{}\n'.format(movies_dic['title'][i], movies_dic['link'][i])
     carousel_template = CarouselTemplate(columns=carousel_group, image_aspect_ratio='square', image_size='cover')
     template_message = TemplateSendMessage(alt_text='Carousel alt text', template=carousel_template)
-    send_template_message(reply_token, template_message)
+    push_template_message(event, template_message)
     return True
 
-def show_animate_leaderboard(reply_token):
+def show_animate_leaderboard(event):
     buttons_template = ButtonsTemplate(
         title = '排行榜',
         text = '請按下方選項',
@@ -596,10 +595,10 @@ def show_animate_leaderboard(reply_token):
             PostbackAction(label = '期待排行榜', data = '期待')
         ])
     template_message = TemplateSendMessage(alt_text = 'Buttons alt text', template = buttons_template)
-    send_template_message(reply_token, template_message)
+    push_template_message(event, template_message)
     return True
 
-def show_hot_animate(reply_token, chart):
+def show_hot_animate(event, chart):
     requests.packages.urllib3.disable_warnings()
     # 查 排行
     if chart == '人氣':
@@ -672,10 +671,10 @@ def show_hot_animate(reply_token, chart):
         # content += '{}\n{}\n'.format(movies_dic['title'][i], movies_dic['link'][i])
     carousel_template = CarouselTemplate(columns=carousel_group, image_aspect_ratio='square', image_size='cover')
     template_message = TemplateSendMessage(alt_text='Carousel alt text', template=carousel_template)
-    send_template_message(reply_token, template_message)
+    push_template_message(event, template_message)
     return True
 
-def show_animates_news(reply_token):
+def show_animates_news(event):
     requests.packages.urllib3.disable_warnings()
     # 查 新聞
     target_url = 'https://acg.gamer.com.tw/news.php?p=anime'
@@ -717,10 +716,10 @@ def show_animates_news(reply_token):
 
     image_carousel_template = ImageCarouselTemplate(columns=imagecarousel_group)
     template_message = TemplateSendMessage(alt_text='ImageCarousel alt text', template=image_carousel_template)
-    send_template_message(reply_token, template_message)
+    push_template_message(event, template_message)
     return True
 
-def search_animate(reply_token, searchname):
+def search_animate(event, searchname):
     requests.packages.urllib3.disable_warnings()
     # 查 新聞
     target_url = 'https://acg.gamer.com.tw/search.php?sp=t4&kw=' + searchname
@@ -774,45 +773,45 @@ def search_animate(reply_token, searchname):
             # content += '{}\n{}\n'.format(movies_dic['title'][i], movies_dic['link'][i])
         carousel_template = CarouselTemplate(columns=carousel_group, image_aspect_ratio='square', image_size='cover')
         template_message = TemplateSendMessage(alt_text='Carousel alt text', template=carousel_template)
-        send_template_message(reply_token, template_message)
+        push_template_message(event, template_message)
     else:
         mesg = '您的動畫搜尋結果：共 0 筆，符合' + searchname
-        send_text_message(reply_token, mesg)
+        push_text_message(event, mesg)
     return True
 
 def add_favorite(event, data):
     url = data.split(',')
     if url[0] == 'movie':
         if url[1] in favorite_movies[event.source.user_id]:
-            send_text_message(event.reply_token, '已在我的最愛')
+            push_text_message(event, '已在我的最愛')
             return True
         else:
             if len(favorite_movies[event.source.user_id]) < 10:
                 favorite_movies[event.source.user_id].append(url[1])
-                send_text_message(event.reply_token, '成功加入我的最愛')
+                push_text_message(event, '成功加入我的最愛')
             else:
-                send_text_message(event.reply_token, '我的最愛已滿(最多10個)')
+                push_text_message(event, '我的最愛已滿(最多10個)')
                 return True
     else:
         if url[1] in favorite_animates[event.source.user_id]:
-            send_text_message(event.reply_token, '已在我的最愛')
+            push_text_message(event, '已在我的最愛')
             return True
         else:
             if len(favorite_animates[event.source.user_id]) < 10:
                 favorite_animates[event.source.user_id].append(url[1])
-                send_text_message(event.reply_token, '成功加入我的最愛')
+                push_text_message(event, '成功加入我的最愛')
             else:
-                send_text_message(event.reply_token, '我的最愛已滿(最多10個)')
+                push_text_message(event, '我的最愛已滿(最多10個)')
                 return True
     return True
 
-def my_favorite_confirm(reply_token):
+def my_favorite_confirm(event):
     confirm_template = ConfirmTemplate(text='我的動畫 or 我的電影?', actions=[
         PostbackAction(label='我的動畫', data='動畫'),
         PostbackAction(label='我的電影', data='電影')
     ])
     template_message = TemplateSendMessage(alt_text='Confirm alt text', template=confirm_template)
-    send_template_message(reply_token, template_message)
+    push_template_message(event, template_message)
     return True
 
 def show_favorite(event, text):
@@ -848,9 +847,9 @@ def show_favorite(event, text):
                 # content += '{}\n{}\n'.format(movies_dic['title'][i], movies_dic['link'][i])
             carousel_template = CarouselTemplate(columns=carousel_group, image_aspect_ratio='square', image_size='cover')
             template_message = TemplateSendMessage(alt_text='Carousel alt text', template=carousel_template)
-            send_template_message(event.reply_token, template_message)
+            push_template_message(event, template_message)
         else:
-            send_text_message(event.reply_token, '我的最愛目前沒有內容')
+            push_text_message(event, '我的最愛目前沒有內容，請返回我的最愛~')
     else:
         if len(favorite_movies[event.source.user_id]) != 0:
             carousel_group = []
@@ -884,9 +883,9 @@ def show_favorite(event, text):
                 # content += '{}\n{}\n'.format(movies_dic['title'][i], movies_dic['link'][i])
             carousel_template = CarouselTemplate(columns=carousel_group, image_aspect_ratio='square', image_size='cover')
             template_message = TemplateSendMessage(alt_text='Carousel alt text', template=carousel_template)
-            send_template_message(event.reply_token, template_message)
+            push_template_message(event, template_message)
         else:
-            send_text_message(event.reply_token, '我的最愛目前沒有內容')
+            push_text_message(event, '我的最愛目前沒有內容，請返回我的最愛~')
     return True
 
 def delete_favorite(event, data):
