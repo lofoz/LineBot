@@ -14,7 +14,8 @@ from utils import (
     show_favorite,
     delete_favorite,
     push_text_message,
-    push_template_message
+    push_template_message,
+    do_game
 )
 
 machine = {}
@@ -63,7 +64,7 @@ class TocMachine(GraphMachine):
         return text.lower() == "遊戲選單"
 
     def on_enter_game_lobby(self, event):
-        SwitchMenuTo("Submenu", event)
+        SwitchMenuTo("gamemenu", event)
         push_text_message(event, "歡迎來到猜拳小遊戲")
         push_text_message(event, "請選擇下方選項~")
 
@@ -241,3 +242,11 @@ class TocMachine(GraphMachine):
         event.postback.data = data[1]
         delete_favorite(event, text)
         self.go_back_show_favorite(event)
+
+    def is_going_to_do_game(self, event):
+        text = event.message.text
+        return text == '石頭' or text == '剪刀' or text == '布'
+
+    def on_enter_do_game(self, event):
+        do_game(event, event.message.text)
+        self.go_back_game_lobby(event)

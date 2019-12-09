@@ -21,7 +21,8 @@ machineData = {
         "my_favorite",
         "show_favorite",
         "leave_favorite",
-        "delete_favorite"
+        "delete_favorite",
+        "do_game"
     ],
     "transitions" : [
         {
@@ -41,6 +42,12 @@ machineData = {
             "source": "main_menu",
             "dest": "game_lobby",
             "conditions": "is_going_to_game_lobby",
+        },
+        {
+            "trigger": "advance",
+            "source": "game_lobby",
+            "dest": "do_game",
+            "conditions": "is_going_to_do_game",
         },
         {
             "trigger": "advance",
@@ -237,6 +244,12 @@ machineData = {
             "source": ["animate_leaderboard", "hot_animate", "animate_news", "do_search_animate", "add_favorite", "leave_favorite"],
             "dest": "animation_lobby",
         },
+        # 無條件返回 game_lobby
+        {
+            "trigger": "go_back_game_lobby",
+            "source": "do_game",
+            "dest": "game_lobby",
+        }
     ],
     "initial" : "main_menu",
     "auto_transitions" : "False",

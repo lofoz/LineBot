@@ -19,9 +19,11 @@ from linebot.models import (
 from imgurpython import ImgurClient
 import requests
 from bs4 import BeautifulSoup
+import  random
 
 favorite_movies = {}
 favorite_animates = {}
+win_game = {}
 channel_access_token = os.environ.get("LINE_CHANNEL_ACCESS_TOKEN")
 
 def push_text_message(event, text):
@@ -247,14 +249,14 @@ def show_hot_movies(event, chart):
             )
         else:
             carousel_data = CarouselColumn(
-                thumbnail_image_url='https://movies.tw.campaign.yahoo.net/i/o/production/movies/August2019/vpVOFf6g6g3WiSd1qFTN-2764x4096.jpeg',
+                thumbnail_image_url='https://i.imgur.com/C33VNBj.png',
                 title=movies_dic['title'][i][0:40],
                 text='上映日期：'+movies_dic['date'][i],
                 actions=[
                     URIAction(label='詳細內容',
-                              uri='https://movies.tw.campaign.yahoo.net/i/o/production/movies/August2019/vpVOFf6g6g3WiSd1qFTN-2764x4096.jpeg'),
+                              uri='https://i.imgur.com/C33VNBj.png'),
                     URIAction(label='預告片',
-                              uri='https://movies.tw.campaign.yahoo.net/i/o/production/movies/August2019/vpVOFf6g6g3WiSd1qFTN-2764x4096.jpeg'),
+                              uri='https://i.imgur.com/C33VNBj.png'),
                     PostbackAction(label='加入最愛', data='No')
                 ]
             )
@@ -371,14 +373,14 @@ def show_hot_movies_pre(event):
             )
         else:
             carousel_data = CarouselColumn(
-                thumbnail_image_url='https://movies.tw.campaign.yahoo.net/i/o/production/movies/August2019/vpVOFf6g6g3WiSd1qFTN-2764x4096.jpeg',
+                thumbnail_image_url='https://i.imgur.com/C33VNBj.png',
                 title=movies_dic['title'][i][0:40],
                 text='上映日期：'+movies_dic['date'][i],
                 actions=[
                     URIAction(label='詳細內容',
-                              uri='https://movies.tw.campaign.yahoo.net/i/o/production/movies/August2019/vpVOFf6g6g3WiSd1qFTN-2764x4096.jpeg'),
+                              uri='https://i.imgur.com/C33VNBj.png'),
                     URIAction(label='預告片',
-                              uri='https://movies.tw.campaign.yahoo.net/i/o/production/movies/August2019/vpVOFf6g6g3WiSd1qFTN-2764x4096.jpeg'),
+                              uri='https://i.imgur.com/C33VNBj.png'),
                     PostbackAction(label='加入最愛', data='No')
                 ]
             )
@@ -553,6 +555,9 @@ def animate_new_season(event, choice):
         animates_star.append('評分：' + datas.find('div', 'ACG-mainbox4').find('p', 'ACG-mainboxpoint').span.text)
         animates_hot.append('人氣：' + datas.find('div', 'ACG-mainbox4').find('p', 'ACG-mainplay').span.text)
 
+    page_now = soup.select_one('p.BH-pagebtnA').find('a', 'pagenow').text
+    page = soup.select_one('p.BH-pagebtnA').find_all('a')
+    page_num = len(page)
     # 製作line 回復訊息
     x = ['title', 'img_link', 'link', 'date', 'animates_star', 'animates_text', 'animates_hot']
     animates_group = []
@@ -581,8 +586,23 @@ def animate_new_season(event, choice):
         # print(movies_dic['link'][i])
         # content += '{}\n{}\n'.format(movies_dic['title'][i], movies_dic['link'][i])
     carousel_template = CarouselTemplate(columns=carousel_group, image_aspect_ratio='square', image_size='cover')
-    template_message = TemplateSendMessage(alt_text='Carousel alt text', template=carousel_template)
-    push_template_message(event, template_message)
+    template_message1 = TemplateSendMessage(alt_text='Carousel alt text', template=carousel_template)
+
+    # 製作 下一頁訊息
+    # if page_num == 1:
+    # buttons_template = ButtonsTemplate(
+    #         text='目前頁數 '+page_now+'/'+str(page_num),
+    #         actions=[
+    #             PostbackAction(label='返回', data='返回本季新作')
+    #         ])
+    # else:
+    #     buttons_template = ButtonsTemplate(text='目前頁數 ' + page_now + '/' + str(page_num), actions=[
+    #         PostbackAction(label='返回', data='返回本季新作'),
+    #         PostbackAction(label='下一頁', data='下一頁,'+'https://acg.gamer.com.tw/'+page[int(page_now)]['href'])
+    #     ])
+    # template_message2 = TemplateSendMessage(alt_text = 'Buttons alt text', template = buttons_template)
+    push_template_message(event, template_message1)
+    # push_text_message(event, '目前頁數 '+page_now+'/'+str(page_num))
     return True
 
 def show_animate_leaderboard(event):
@@ -898,6 +918,43 @@ def delete_favorite(event, data):
         if url[1] in favorite_animates[event.source.user_id]:
             favorite_animates[event.source.user_id].remove(url[1])
             return True
+    return True
+
+def do_game(event, text):
+    if text == '石頭':
+        catch = random.randint(1, 3)
+        if (catch == 2):
+            push_text_message(event, '剪刀')
+            win_game[event.source.user_id] += 1
+        elif (catch == 3):
+            push_text_message(event, '布')
+            if win_game[event.source.user_id] > 0:
+                win_game[event.source.user_id] -= 1
+        else:
+            push_text_message(event, '石頭')
+    elif text == '剪刀':
+        catch = random.randint(1, 3)
+        if (catch == 3):
+            push_text_message(event, '布')
+            win_game[event.source.user_id] += 1
+        elif (catch == 1):
+            push_text_message(event, '石頭')
+            if win_game[event.source.user_id] > 0:
+                win_game[event.source.user_id] -= 1
+        else:
+            push_text_message(event, '剪刀')
+    elif text == '布':
+        catch = random.randint(1, 3)
+        if (catch == 1):
+            push_text_message(event, '石頭')
+            win_game[event.source.user_id] += 1
+        elif (catch == 2):
+            push_text_message(event, '剪刀')
+            if win_game[event.source.user_id] > 0:
+                win_game[event.source.user_id] -= 1
+        else:
+            push_text_message(event, '布')
+    push_text_message(event, '目前連贏 '+str(win_game[event.source.user_id]) +' 次')
     return True
 
 def upload_photo(image_url):

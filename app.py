@@ -8,7 +8,7 @@ from linebot.exceptions import InvalidSignatureError
 from linebot.models import MessageEvent, TextMessage, PostbackEvent
 
 from fsm import TocMachine, favorite_state, machine
-from utils import favorite_movies, favorite_animates, SwitchMenuTo
+from utils import favorite_movies, favorite_animates, win_game
 from machine_data import  machineData
 
 load_dotenv()
@@ -51,11 +51,12 @@ def callback():
                 auto_transitions=machineData["auto_transitions"],
                 show_conditions=machineData["show_conditions"]
             )
-            SwitchMenuTo("mainmenu", event)
         if event.source.user_id not in favorite_movies:
             favorite_movies[event.source.user_id] = []
         if event.source.user_id not in favorite_animates:
             favorite_animates[event.source.user_id] = []
+        if event.source.user_id not in win_game:
+            win_game[event.source.user_id] = 0
         if isinstance(event, MessageEvent):
             if isinstance(event.message, TextMessage) and isinstance(event.message.text, str):
                 response = machine[event.source.user_id].advance(event)
