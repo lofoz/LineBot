@@ -35,6 +35,7 @@
 <img src="https://i.imgur.com/9ab4RCc.png" width="200">
 <img src="https://i.imgur.com/HwwtEuj.png" width="200">
 <img src="https://i.imgur.com/mhOYt77.png" width="200">
+
 ## 功能
 * 提供最新動畫、電影資訊
 * 可查詢動畫、電影
