@@ -14,27 +14,8 @@
 </p>
 
 ## 說明
+> 使用FSM(有限狀態機)的概念 實作Line Bot
 建立一個可以列出近期電影、動畫資訊以及將有興趣的內容加入最愛的Line Bot
-
-## Demo
-<img src="https://i.imgur.com/ZJaWRmk.png" width="200">
-<img src="https://i.imgur.com/n7XlYUv.png" width="200">
-<img src="https://i.imgur.com/o7wocIT.png" width="200">
-<img src="https://i.imgur.com/lzjPrRK.png" width="200">
-<img src="https://i.imgur.com/ZOYTE73.png" width="200">
-<img src="https://i.imgur.com/fhVav7t.png" width="200">
-<img src="https://i.imgur.com/UxYhz7o.jpg" width="200">
-<img src="https://i.imgur.com/6JAq7OW.png" width="200">
-<img src="https://i.imgur.com/fdy4t7A.png" width="200">
-<img src="https://i.imgur.com/WGzJani.jpg" width="200">
-<img src="https://i.imgur.com/AdL1uXN.jpg" width="200">
-<img src="https://i.imgur.com/lEbtZi9.png" width="200">
-<img src="https://i.imgur.com/wHcxmQO.png" width="200">
-<img src="https://i.imgur.com/ed8G55L.png" width="200">
-<img src="https://i.imgur.com/bvLkU7o.png" width="200">
-<img src="https://i.imgur.com/9ab4RCc.png" width="200">
-<img src="https://i.imgur.com/HwwtEuj.png" width="200">
-<img src="https://i.imgur.com/mhOYt77.png" width="200">
 
 ## 功能
 * 提供最新動畫、電影資訊
@@ -60,3 +41,24 @@
 
 **game_lobby**
 簡易的猜拳遊戲、紀錄個人連贏次數
+
+## Demo
+<img src="https://i.imgur.com/ZJaWRmk.png" width="200">
+<img src="https://i.imgur.com/n7XlYUv.png" width="200">
+<img src="https://i.imgur.com/o7wocIT.png" width="200">
+<img src="https://i.imgur.com/lzjPrRK.png" width="200">
+<img src="https://i.imgur.com/ZOYTE73.png" width="200">
+<img src="https://i.imgur.com/fhVav7t.png" width="200">
+<img src="https://i.imgur.com/UxYhz7o.jpg" width="200">
+<img src="https://i.imgur.com/6JAq7OW.png" width="200">
+<img src="https://i.imgur.com/fdy4t7A.png" width="200">
+<img src="https://i.imgur.com/WGzJani.jpg" width="200">
+<img src="https://i.imgur.com/AdL1uXN.jpg" width="200">
+<img src="https://i.imgur.com/lEbtZi9.png" width="200">
+<img src="https://i.imgur.com/wHcxmQO.png" width="200">
+<img src="https://i.imgur.com/ed8G55L.png" width="200">
+<img src="https://i.imgur.com/bvLkU7o.png" width="200">
+<img src="https://i.imgur.com/9ab4RCc.png" width="200">
+<img src="https://i.imgur.com/HwwtEuj.png" width="200">
+<img src="https://i.imgur.com/mhOYt77.png" width="200">
+
