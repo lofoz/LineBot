@@ -1,5 +1,18 @@
 # Line Bot
 
+<p align=center>
+    <img src="https://i.imgur.com/ZJaWRmk.png">
+</p>
+
+<p align=center>
+    <a target="_blank" href="http://makeapullrequest.com" title="PRs Welcome"><img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg"></a>
+    <a target="_blank" href="#" title="language count"><img src="https://img.shields.io/github/languages/count/lofoz/LineBot?color=red"></a>
+    <a target="_blank" href="#" title="top language"><img src="https://img.shields.io/github/languages/top/lofoz/LineBot?color=purple"></a>
+    <a target="_blank" href="https://opensource.org/licenses/MIT" title="License: MIT"><img src="https://img.shields.io/badge/License-MIT-green.svg"></a>
+    <a target="_blank" href="#" title="repo size"><img src="https://img.shields.io/github/repo-size/lofoz/LineBot"></a>
+
+</p>
+
 ## 說明
 建立一個可以列出近期電影、動畫資訊以及將有興趣的內容加入最愛的Line Bot
 
