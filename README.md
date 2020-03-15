@@ -1,7 +1,7 @@
 # Line Bot
 
 <p align=center>
-    <img src="https://i.imgur.com/ZJaWRmk.png">
+    <img src="https://i.imgur.com/ZJaWRmk.png" width = "200">
 </p>
 
 <p align=center>
