@@ -84,7 +84,7 @@ def show_new_movies(event):
         if pre_link != None:
             movies_pre.append(pre_link)
         else:
-            movies_pre.append('')
+            movies_pre.append('https://movies.yahoo.com.tw/movie_thisweek.html')
 
     # 製作line 回復訊息
     x = ['title', 'img_link', 'link', 'movies_pre', 'date', 'movies_star', 'movies_text']
