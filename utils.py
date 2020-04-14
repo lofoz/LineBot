@@ -80,7 +80,11 @@ def show_new_movies(event):
         movies_star.append(movie_info.find('dl', 'levelbox').dt.span.text)
         date.append(movie_info_u.find('div', 'release_movie_time').text)
         movies_text.append(movie_info_u.find('div', 'release_text').span.text.lstrip())
-        movies_pre.append(movie_info_l.find_all('a')[1]['href'])
+        pre_link = movie_info_l.find_all('a')[1].get('href')
+        if pre_link != None:
+            movies_pre.append(pre_link)
+        else:
+            movies_pre.append('')
 
     # 製作line 回復訊息
     x = ['title', 'img_link', 'link', 'movies_pre', 'date', 'movies_star', 'movies_text']
